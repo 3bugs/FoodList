@@ -1,20 +1,17 @@
 package com.example.foodlist.adapter;
 
 import android.content.Context;
-import android.content.res.AssetManager;
-import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.example.foodlist.R;
 import com.example.foodlist.model.Food;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 
 /**
@@ -44,6 +41,7 @@ public class FoodListAdapter extends ArrayAdapter<Food> {
 
         Food food = mFoodList.get(position);
 
+/*
         AssetManager am = mContext.getAssets();
         try {
             InputStream stream = am.open(food.getFoodImage());
@@ -53,6 +51,9 @@ public class FoodListAdapter extends ArrayAdapter<Food> {
             Log.e("FoodList", "Error loading drawable from inputstream: " + e.getMessage());
             e.printStackTrace();
         }
+*/
+        String imageUrl = "http://10.0.3.2/foodlist/images/" + food.getFoodImage();
+        Glide.with(mContext).load(imageUrl).into(foodImageView);
 
         foodTextView.setText(food.getFoodName());
 

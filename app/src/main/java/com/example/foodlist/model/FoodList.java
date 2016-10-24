@@ -3,10 +3,24 @@ package com.example.foodlist.model;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 
 import com.example.foodlist.db.DatabaseHelper;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.ArrayList;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * Created by Promlert on 10/22/2016.
@@ -14,9 +28,14 @@ import java.util.ArrayList;
 
 public class FoodList {
 
+    private static final String TAG = "FoodList";
+
     private Context mContext;
     private ArrayList<Food> mFoodList;
     private static FoodList mInstance;
+
+    private static final OkHttpClient mClient = new OkHttpClient();
+    private ResponseStatus mResponseStatus;
 
     public static FoodList getInstance(Context context) {
         if (mInstance == null) {
@@ -42,6 +61,11 @@ public class FoodList {
 */
     }
 
+    public interface GetDataCallback {
+        void onSuccess(ArrayList<Food> foodList);
+        void onError(ResponseStatus responseStatus);
+    }
+
     public ArrayList<Food> getData() {
         mFoodList.clear();
 
@@ -60,5 +84,65 @@ public class FoodList {
         }
         cursor.close();
         return mFoodList;
+    }
+
+    public void getDataFromWebService(final GetDataCallback callback) {
+        mFoodList.clear();
+
+        Request request = new Request.Builder()
+                .url("http://10.0.3.2/foodlist/get_food_list.php")
+                .build();
+
+        mClient.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.e(TAG, "Network Error!");
+                mResponseStatus = new ResponseStatus(false, "Network Error");
+                callback.onError(mResponseStatus);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String jsonResult = response.body().string();
+                Log.i(TAG, jsonResult);
+
+                try {
+                    JSONObject jsonObject = new JSONObject(jsonResult);
+                    int success = jsonObject.getInt("success");
+                    if (success == 1) {
+                        // อ่านข้อมูลจาก server สำเร็จ
+                        mResponseStatus = new ResponseStatus(true, null);
+                        JSONArray jsonArrayFoodData = jsonObject.getJSONArray("food_data");
+
+                        for (int i = 0; i < jsonArrayFoodData.length(); i++) {
+                            JSONObject jsonFood = jsonArrayFoodData.getJSONObject(i);
+                            String name = jsonFood.getString("name");
+                            String image = jsonFood.getString("image");
+
+                            Food food = new Food(name, image);
+                            mFoodList.add(food);
+                        }
+
+                        new Handler(Looper.getMainLooper()).post(
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        callback.onSuccess(mFoodList);
+                                    }
+                                }
+                        );
+
+                    } else if (success == 0) {
+                        // อ่านข้อมูลจาก server ไม่สำเร็จ
+                        mResponseStatus = new ResponseStatus(false, jsonObject.getString("message"));
+                        callback.onError(mResponseStatus);
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Log.e(TAG, "Error parsing JSON!");
+                }
+            }
+        });
     }
 }
