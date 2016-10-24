@@ -65,6 +65,10 @@ public class FoodList {
         void onSuccess(ArrayList<Food> foodList);
         void onError(ResponseStatus responseStatus);
     }
+    public interface AddFoodCallback {
+        void onSuccess();
+        void onError(String errorMessage);
+    }
 
     public ArrayList<Food> getData() {
         mFoodList.clear();
@@ -144,5 +148,55 @@ public class FoodList {
                 }
             }
         });
+    }
+
+    public void addFood(String name, final AddFoodCallback callback) {
+        Request request = new Request.Builder()
+                .url("http://10.0.3.2/foodlist/add_food.php?name=" + name)
+                .build();
+
+        mClient.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onError("Network Error!");
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String jsonResult = response.body().string();
+
+                try {
+                    JSONObject jsonObject = new JSONObject(jsonResult);
+                    int success = jsonObject.getInt("success");
+
+                    if (success == 1) {
+                        new Handler(Looper.getMainLooper()).post(
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        callback.onSuccess();
+                                    }
+                                }
+                        );
+                    } else if (success == 0) {
+                        final String errorMessage = jsonObject.getString("message");
+
+                        new Handler(Looper.getMainLooper()).post(
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        callback.onError(errorMessage);
+                                    }
+                                }
+                        );
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
+
     }
 }
