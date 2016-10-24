@@ -3,6 +3,7 @@ package com.example.foodlist;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -16,17 +17,21 @@ import com.example.foodlist.model.FoodList;
 
 public class MainActivity extends AppCompatActivity {
 
-    //private ArrayList<Food> mFoodList;
+    private static final String TAG = "MainActivity";
+    private ListView mFoodListView;
+    private FoodList mFoodList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i(TAG, "onCreate");
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final FoodList foodList = FoodList.getInstance(this);
+        mFoodList = FoodList.getInstance(this);
 
-        ListView foodListView = (ListView) findViewById(R.id.food_list_view);
-        foodListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mFoodListView = (ListView) findViewById(R.id.food_list_view);
+        mFoodListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 Toast t = Toast.makeText(
@@ -45,14 +50,51 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    } // ปิด onCreate
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.i(TAG, "onStart");
+    } // ปิด onStart
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i(TAG, "onResume");
+
         FoodListAdapter adapter = new FoodListAdapter(
                 this,
                 R.layout.list_item,
-                foodList.getData()
+                mFoodList.getData()
         );
 
-        foodListView.setAdapter(adapter);
-    }
+        mFoodListView.setAdapter(adapter);
+    } // ปิด onResume
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.i(TAG, "onPause");
+    } // ปิด onPause
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.i(TAG, "onStop");
+    } // ปิด onStop
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.i(TAG, "onDestroy");
+    } // ปิด onDestroy
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.i(TAG, "onRestart");
+    } // ปิด onRestart
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
