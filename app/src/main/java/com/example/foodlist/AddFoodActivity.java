@@ -1,4 +1,4 @@
-package com.example.foodlist.model;
+package com.example.foodlist;
 
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
@@ -8,7 +8,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.example.foodlist.R;
 import com.example.foodlist.db.DatabaseHelper;
 
 public class AddFoodActivity extends AppCompatActivity {

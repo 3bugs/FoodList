@@ -12,7 +12,6 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.foodlist.adapter.FoodListAdapter;
-import com.example.foodlist.model.AddFoodActivity;
 import com.example.foodlist.model.FoodList;
 
 public class MainActivity extends AppCompatActivity {
